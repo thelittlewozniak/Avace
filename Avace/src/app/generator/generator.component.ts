@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material';
 @Component({
   selector: 'app-generator',
   templateUrl: './generator.component.html',
@@ -17,7 +18,10 @@ export class GeneratorComponent implements OnInit {
     private skinColor;
     private hairLength;
     private loading = false;
-    public constructor(private httpClient: HttpClient) {
+    public constructor(
+      private httpClient: HttpClient,
+      private snackbar: MatSnackBar
+      ) {
     }
 
     public ngOnInit() { }
@@ -48,8 +52,13 @@ export class GeneratorComponent implements OnInit {
       // tslint:disable-next-line:max-line-length
       this.httpClient.post<any>('https://northeurope.api.cognitive.microsoft.com/face/v1.0/detect?returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,headPose,smile,facialHair,glasses,emotion,hair,makeup,occlusion,accessories,blur,exposure,noise', blob, {headers})
       .subscribe((result) => {
-        this.dataFace = result[0].faceAttributes;
-        this.detectSkinColor(blob);
+        try {
+          this.dataFace = result[0].faceAttributes;
+          this.detectSkinColor(blob);
+        } catch (error) {
+          this.loading = false;
+          this.snackbar.open('No face detected', 'ok', {duration: 5000});
+        }
       });
     }
     private detectSkinColor(blob) {
@@ -105,16 +114,17 @@ export class GeneratorComponent implements OnInit {
       }
       this.urlPicture += '&clotheType=CollarSweater&clotheColor=Blue03';
       if (this.dataFace.gender === 'male') {
+        console.log(this.dataFace.facialHair.beard);
         if (this.dataFace.facialHair.beard > 0.75) {
           this.urlPicture += '&facialHairType=BeardMajestic';
-        } else if (this.dataFace.beard > 0.5) {
+        } else if (this.dataFace.facialHair.beard > 0.5) {
           this.urlPicture += '&facialHairType=BeardMedium';
-        } else if (this.dataFace.beard > 0.25) {
+        } else if (this.dataFace.facialHair.beard > 0.25) {
           this.urlPicture += '&facialHairType=BeardLight';
-        } else if (true) {
-          if (this.dataFace.moustache > 0.5) {
+        } else {
+          if (this.dataFace.facialHair.moustache > 0.5) {
             this.urlPicture += '&facialHairType=MoustacheMagnum';
-          } else if (this.dataFace.moustache > 0.25) {
+          } else if (this.dataFace.facialHair.moustache > 0.25) {
             this.urlPicture += '&facialHairType=MoustacheFancy';
           } else {
             this.urlPicture += '&facialHairType=Blank';
@@ -123,7 +133,6 @@ export class GeneratorComponent implements OnInit {
         switch (this.dataFace.hair.hairColor) {
             case 'other':
             case 'unknown':
-            case '':
               this.urlPicture += '&facialHairColor=Black';
               break;
             case 'blond':
@@ -171,7 +180,6 @@ export class GeneratorComponent implements OnInit {
         switch (this.dataFace.hair.hairColor) {
             case 'other':
             case 'unknown':
-            case '':
               this.urlPicture += '&hairColor=Black';
               break;
             case 'blond':
