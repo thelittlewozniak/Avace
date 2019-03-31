@@ -5,7 +5,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { GeneratorComponent } from './generator/generator.component';
 import { HttpClientModule } from '@angular/common/http';
-
+import { MatProgressBarModule, MatButtonModule, MatSnackBarModule} from '@angular/material';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 @NgModule({
   declarations: [
     AppComponent,
@@ -14,7 +15,11 @@ import { HttpClientModule } from '@angular/common/http';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatProgressBarModule,
+    MatButtonModule,
+    MatSnackBarModule
   ],
   providers: [
   ],
